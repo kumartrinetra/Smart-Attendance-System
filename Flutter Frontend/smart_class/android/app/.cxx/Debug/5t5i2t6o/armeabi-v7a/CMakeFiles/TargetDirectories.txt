@@ -1,0 +1,2 @@
+C:/Users/LENOVO/Smart ClassRoom/Flutter Frontend/smart_class/android/app/.cxx/Debug/5t5i2t6o/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/LENOVO/Smart ClassRoom/Flutter Frontend/smart_class/android/app/.cxx/Debug/5t5i2t6o/armeabi-v7a/CMakeFiles/rebuild_cache.dir

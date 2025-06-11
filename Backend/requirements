@@ -1,0 +1,33 @@
+Student Model:
+full name
+roll no
+email id
+contact
+profilePic
+courses
+
+Teacher Model
+full name
+email
+contact
+profile pic
+locations
+courses
+
+course Model
+name
+course id
+classes
+students
+duration
+
+class Model
+date
+duration
+students
+location
+
+location Model
+name
+latitude
+longitude
