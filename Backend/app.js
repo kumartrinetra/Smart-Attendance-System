@@ -4,6 +4,7 @@ const studentRouter = require("./routes/student_router");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const app = express();
+app.disable("x-powered-by");
 require("dotenv").config();
 const db = require("./config/mongoose_connection");
 
