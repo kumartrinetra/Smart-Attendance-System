@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 module.exports.registerStudent = async function (req, res) {
     try {
       let { name, roll, email, contact, password } = req.body;
+      email = String(email);
       let students = await studentModel.findOne({email: email});
       if(students)
       {
@@ -38,7 +39,7 @@ module.exports.registerStudent = async function (req, res) {
 module.exports.loginStudent = async function (req, res) {
     try {
       const { email, password } = req.body;
-      const student = await studentModel.findOne({ email: email });
+      const student = await studentModel.findOne({ email: String(email) });
       if (!student) {
         return res.status(502).send("Email doesn't exists");
       }

@@ -8,11 +8,10 @@ module.exports.markAttendance = async function (req, res) {
     const newAttendance = await attendanceModel.create({
       deviceId,
       student,
-      myClass,
+      myClass: myClass.toString(),
     });
-    const meraClass = await classModel.findOne({_id : myClass});
-    
-    
+    const meraClass = await classModel.findOne({ _id: myClass.toString() });
+     
     meraClass.attendance.push(newAttendance._id);
     await meraClass.save();
     res.status(201).send({
@@ -31,7 +30,7 @@ module.exports.getAttendances = async function (req, res) {
       return res.status(404).send("No attendance is available");
     }
     const myAttendance = await attendanceModel.find({
-      _id: { $in: attendances },
+      _id: { $in: attendances.map(id => id.toString()) },
     });
     if (!myAttendance || myAttendance.length === 0) {
       return res.status(404).send("No attendance is available");
@@ -41,5 +40,3 @@ module.exports.getAttendances = async function (req, res) {
     res.status(500).send(err.message);
   }
 };
-
-
