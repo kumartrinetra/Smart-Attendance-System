@@ -5,7 +5,8 @@ const { generateToken } = require("../../utils/generate_token");
 module.exports.registerTeacher = async function (req, res) {
   try {
     let { name, email, contact, password } = req.body;
-    let teacher = await teacherModel.findOne({ email: email });
+    // Convert email to string to prevent potential object injection
+    let teacher = await teacherModel.findOne({ email: email.toString() });
     if (teacher) {
       return res.status(502).send("Email already exists");
     }
@@ -13,7 +14,7 @@ module.exports.registerTeacher = async function (req, res) {
       bcrypt.hash(password, salt, async function (err, hash) {
         try {
           teacher = await teacherModel.create({
-            email,
+            email: email.toString(),
             name,
             contact,
             password: hash,
@@ -34,7 +35,8 @@ module.exports.registerTeacher = async function (req, res) {
 module.exports.loginTeacher = async function (req, res) {
     try {
       const { email, password } = req.body;
-      const teacher = await teacherModel.findOne({ email: email });
+      // Convert email to string to prevent potential object injection
+      const teacher = await teacherModel.findOne({ email: email.toString() });
       if (!teacher) {
         return res.status(502).send("Email doesn't exists");
       }
