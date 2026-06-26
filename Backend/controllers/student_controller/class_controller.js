@@ -7,7 +7,7 @@ module.exports.getClasses = module.exports.getClasses = async function (req, res
     if (!classes || classes.length === 0) {
       return res.status(404).send("No classes");
     }
-    const myClasses = await classModel.find({ _id: { $in: classes } });
+    const myClasses = await classModel.find({ _id: { $in: classes.map(String) } });
     if (!myClasses || myClasses.length === 0) {
       return res.status(404).send("No classes");
     }
@@ -16,4 +16,3 @@ module.exports.getClasses = module.exports.getClasses = async function (req, res
     res.status(500).send(err.message);
   }
 };
-
