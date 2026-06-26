@@ -32,7 +32,7 @@ module.exports.getClasses = async function (req, res) {
       return res.status(404).send("No classes");
     }
     // Using $in with an array of strings to prevent NoSQL injection
-    const myClasses = await classModel.find({ _id: { $in: classes.map(String) } });
+    const myClasses = await classModel.find({ _id: { $in: classes.map((id) => id.toString()) } });
     if (!myClasses || myClasses.length === 0) {
       return res.status(404).send("No classes");
     }
