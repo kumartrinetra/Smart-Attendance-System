@@ -3,7 +3,7 @@ const locationModel = require("../../models/location_model");
 module.exports.getLocation = async function (req, res) {
     try{
         const {location} = req.body;
-        const myLocation = await locationModel.findOne({_id : location});
+        const myLocation = await locationModel.findOne({_id : location.toString()});
         if(!myLocation)
         {
             return res.status(404).send("Location does not exist.");
