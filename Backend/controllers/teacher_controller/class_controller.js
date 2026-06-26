@@ -20,18 +20,19 @@ module.exports.createClass = async function (req, res) {
     await myCourse.save();
     res.status(201).send({ class_list: myCourse.classes, class: myClass });
   } catch (err) {
-    
+    // console.log(err);
     res.status(500).send(err.message);
   }
 };
 
 module.exports.getClasses = async function (req, res) {
   try {
-    const { classes } = req.body;
+    const classes = req.body.classes; // Changed to not destructure directly
     if (!classes || classes.length === 0) {
       return res.status(404).send("No classes");
     }
-    const myClasses = await classModel.find({ _id: { $in: classes } });
+    // Using $in with an array of strings to prevent NoSQL injection
+    const myClasses = await classModel.find({ _id: { $in: classes.map(String) } });
     if (!myClasses || myClasses.length === 0) {
       return res.status(404).send("No classes");
     }
@@ -40,5 +41,3 @@ module.exports.getClasses = async function (req, res) {
     res.status(500).send(err.message);
   }
 };
-
-
