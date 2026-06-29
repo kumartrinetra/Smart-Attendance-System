@@ -4,21 +4,17 @@ const teacherModel = require("../../models/teacher_model");
 module.exports.createCourse = async function (req, res) {
   try {
     const { name, courseId, duration, teacher } = req.body;
-    // Validate and sanitize input data
-    if (typeof courseId !== 'string' || typeof teacher !== 'string') {
-      return res.status(400).send("Invalid input data");
-    }
-    const myCourse = await courseModel.findOne({ courseId: courseId });
+    const myCourse = await courseModel.findOne({ courseId: courseId.toString() });
     if (myCourse) {
       return res.status(409).send("Course ID already exists");
     }
     const course = await courseModel.create({
       name,
-      courseId,
+      courseId: courseId.toString(),
       duration,
-      teacher,
+      teacher: teacher.toString(),
     });
-    const myTeacher = await teacherModel.findOne({ _id: teacher });
+    const myTeacher = await teacherModel.findOne({ _id: teacher.toString() });
     myTeacher.courses.push(course._id);
     await myTeacher.save();
     
@@ -34,11 +30,7 @@ module.exports.getCourse = async function (req, res) {
     if (!courses || courses.length === 0) {
       return res.status(404).json("No courses found");
     }
-    // Validate and sanitize input data
-    if (!Array.isArray(courses) || courses.some(course => typeof course !== 'string')) {
-      return res.status(400).send("Invalid input data");
-    }
-    const myCourses = await courseModel.find({ _id: { $in: courses } });
+    const myCourses = await courseModel.find({ _id: { $in: courses.map(course => course.toString()) } });
     if (myCourses.length === 0) {
       return res.status(404).json("No courses found");
     }
