@@ -222,8 +222,6 @@ Win32Window::MessageHandler(HWND hwnd,
 }
 
 void Win32Window::Destroy() {
-  OnDestroy();
-
   if (window_handle_) {
     DestroyWindow(window_handle_);
     window_handle_ = nullptr;
