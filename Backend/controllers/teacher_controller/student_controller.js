@@ -10,7 +10,7 @@ module.exports.getStudents = async function (req, res) {
         return res.status(404).send("No attendances found.");
     }
     const attendances = await attendanceModel.find({
-      _id: { $in: attendance },
+      _id: { $in: attendance.map(String) },
     }).populate("student", "name roll").exec();
 
     const students = attendances.map((record) => record.student);

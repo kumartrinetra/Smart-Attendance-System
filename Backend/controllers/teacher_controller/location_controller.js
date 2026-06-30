@@ -5,14 +5,14 @@ module.exports.setLocation = async function (req, res) {
   try {
     const { longitude, latitude, name, teacher } = req.body;
     const location = await locationModel.create({
-      longitude,
-      latitude,
-      name,
-      teacher,
+      longitude: longitude.toString(),
+      latitude: latitude.toString(),
+      name: name.toString(),
+      teacher: teacher.toString(),
     });
     
     
-    const myTeacher = await teacherModel.findOne({ _id: teacher });
+    const myTeacher = await teacherModel.findOne({ _id: teacher.toString() });
     myTeacher.locations.push(location._id);
     await myTeacher.save();
     res.status(201).send({ "location": location, "Teacher" :  myTeacher.locations});
@@ -25,10 +25,10 @@ module.exports.getLocation = async function (req, res) {
   try {
     const { locations } = req.body;
     
-    if (!locations || locations.length === 0) {
+    if (!locations || !Array.isArray(locations) || locations.length === 0) {
       return res.status(404).send("No locations found");
     }
-    const myLocations = await locationModel.find({ _id: { $in: locations } });
+    const myLocations = await locationModel.find({ _id: { $in: locations.map(loc => loc.toString()) } });
     if (!myLocations || myLocations.length === 0) {
       return res.status(404).send("No locations found");
     }
