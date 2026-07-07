@@ -7,13 +7,13 @@ const app = express();
 app.disable("x-powered-by");
 require("dotenv").config();
 const db = require("./config/mongoose_connection");
-const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
+const allowedOrigins = new Set(['http://localhost:3000', 'http://example.com']);
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
 app.use(cors({
     origin: (origin, callback) => {
-        if (allowedOrigins.includes(origin)) {
+        if (allowedOrigins.has(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
