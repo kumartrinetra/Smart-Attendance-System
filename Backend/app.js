@@ -7,19 +7,23 @@ const app = express();
 app.disable("x-powered-by");
 require("dotenv").config();
 const db = require("./config/mongoose_connection");
-
+const allowedOrigins = ['http://localhost:3000', 'http://example.com'];
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
 app.use(cors({
-    origin: "*",   // ✅ Allow access from any origin
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true
 }));
-
 app.use("/teacher", teacherRouter);
 app.use("/student", studentRouter);
-
 app.listen(3000, () => {
     console.log("Server is listening on port 3000");
 });
