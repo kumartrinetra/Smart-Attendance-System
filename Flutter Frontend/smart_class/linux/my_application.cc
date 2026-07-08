@@ -16,7 +16,7 @@ G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
-  MyApplication* self = MY_APPLICATION(application);
+  auto* self = MY_APPLICATION(application);
   auto window = GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
   // Use a header bar when running in GNOME as this is the common style used
@@ -63,12 +63,11 @@ static void my_application_activate(GApplication* application) {
 
 // Implements GApplication::local_command_line.
 static gboolean my_application_local_command_line(GApplication* application, gchar*** arguments, int* exit_status) {
-  MyApplication* self = MY_APPLICATION(application);
+  auto* self = MY_APPLICATION(application);
   // Strip out the first argument as it is the binary name.
   self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
 
-  g_autoptr(GError) error = nullptr;
-  if (!g_application_register(application, nullptr, &error)) {
+  if (GError* error = nullptr; !g_application_register(application, nullptr, &error)) {
      g_warning("Failed to register: %s", error->message);
      *exit_status = 1;
      return TRUE;
@@ -106,6 +105,8 @@ static void my_application_class_init(MyApplicationClass* klass) {
 }
 
 static void my_application_init(MyApplication* self) {
+  // Intentionally left empty; GObject requires an init function.
+  (void)self;
 }
 
 MyApplication* my_application_new() {

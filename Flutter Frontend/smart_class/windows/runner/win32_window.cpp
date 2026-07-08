@@ -1,5 +1,7 @@
 #include "win32_window.h"
 
+#include <cstdint>
+#include <cstring>
 #include <dwmapi.h>
 #include <flutter_windows.h>
 
@@ -23,13 +25,35 @@ constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 /// A value of 0 indicates apps should use dark mode. A non-zero or missing
 /// value indicates apps should use light mode.
 constexpr const wchar_t kGetPreferredBrightnessRegKey[] =
-  L"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+  L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
 constexpr const wchar_t kGetPreferredBrightnessRegValue[] = L"AppsUseLightTheme";
 
 // The number of Win32Window objects that currently exist.
-static constexpr int g_active_window_count = 0;
+constexpr int g_active_window_count = 0;
 
-using EnableNonClientDpiScaling = BOOL __stdcall(HWND hwnd);
+using EnableNonClientDpiScaling = BOOL __stdcall(HWND);
+using EnableNonClientDpiScalingPtr = EnableNonClientDpiScaling*;
+
+template <typename T>
+T* NativePointerFromInt(std::intptr_t value) {
+  T* result = nullptr;
+  std::memcpy(&result, &value, sizeof(value));
+  return result;
+}
+
+template <typename T>
+std::intptr_t PointerToInt(const T* pointer) {
+  std::intptr_t value = 0;
+  std::memcpy(&value, &pointer, sizeof(pointer));
+  return value;
+}
+
+template <typename T, typename U>
+T FunctionPointerFromProc(U proc) {
+  T result = nullptr;
+  std::memcpy(&result, &proc, sizeof(proc));
+  return result;
+}
 
 // Scale helper to convert logical scaler values to physical using passed in
 // scale factor
@@ -44,10 +68,12 @@ void EnableFullDpiSupportIfAvailable(HWND hwnd) {
   if (!user32_module) {
     return;
   }
-  auto enable_non_client_dpi_scaling =
-      reinterpret_cast<EnableNonClientDpiScaling*>(
-          GetProcAddress(user32_module, "EnableNonClientDpiScaling"));
-  if (enable_non_client_dpi_scaling != nullptr) {
+  const auto enable_non_client_dpi_scaling_proc =
+      GetProcAddress(user32_module, "EnableNonClientDpiScaling");
+  if (enable_non_client_dpi_scaling_proc != nullptr) {
+    const auto enable_non_client_dpi_scaling =
+        FunctionPointerFromProc<EnableNonClientDpiScalingPtr>(
+            enable_non_client_dpi_scaling_proc);
     enable_non_client_dpi_scaling(hwnd);
   }
   FreeLibrary(user32_module);
@@ -97,7 +123,7 @@ const wchar_t* WindowClassRegistrar::GetWindowClass() {
     window_class.hInstance = GetModuleHandle(nullptr);
     window_class.hIcon =
         LoadIcon(window_class.hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
-    window_class.hbrBackground = 0;
+    window_class.hbrBackground = nullptr;
     window_class.lpszMenuName = nullptr;
     window_class.lpfnWndProc = Win32Window::WndProc;
     RegisterClass(&window_class);
@@ -159,9 +185,10 @@ LRESULT CALLBACK Win32Window::WndProc(HWND const window,
                                       WPARAM const wparam,
                                       LPARAM const lparam) noexcept {
   if (message == WM_NCCREATE) {
-    auto window_struct = reinterpret_cast<CREATESTRUCT*>(lparam);
+    const auto window_struct = NativePointerFromInt<CREATESTRUCT>(lparam);
     SetWindowLongPtr(window, GWLP_USERDATA,
-                     reinterpret_cast<LONG_PTR>(window_struct->lpCreateParams));
+                     static_cast<LONG_PTR>(
+                         PointerToInt(window_struct->lpCreateParams)));
 
     auto that = static_cast<Win32Window*>(window_struct->lpCreateParams);
     EnableFullDpiSupportIfAvailable(window);
@@ -188,8 +215,8 @@ Win32Window::MessageHandler(HWND hwnd,
       return 0;
 
     case WM_DPICHANGED: {
-      auto newRectSize = reinterpret_cast<RECT*>(lparam);
-      LONG newWidth = newRectSize->right - newRectSize->left;
+      const auto newRectSize = NativePointerFromInt<RECT>(lparam);
+      const LONG newWidth = newRectSize->right - newRectSize->left;
       LONG newHeight = newRectSize->bottom - newRectSize->top;
 
       SetWindowPos(hwnd, nullptr, newRectSize->left, newRectSize->top, newWidth,
@@ -222,7 +249,7 @@ Win32Window::MessageHandler(HWND hwnd,
 }
 
 void Win32Window::Destroy() {
-  OnDestroy();
+  Win32Window::OnDestroy();
 
   if (window_handle_) {
     DestroyWindow(window_handle_);
@@ -234,8 +261,8 @@ void Win32Window::Destroy() {
 }
 
 Win32Window* Win32Window::GetThisFromHandle(HWND const window) noexcept {
-  return reinterpret_cast<Win32Window*>(
-      GetWindowLongPtr(window, GWLP_USERDATA));
+  return NativePointerFromInt<Win32Window>(
+      static_cast<std::intptr_t>(GetWindowLongPtr(window, GWLP_USERDATA)));
 }
 
 void Win32Window::SetChildContent(HWND content) {

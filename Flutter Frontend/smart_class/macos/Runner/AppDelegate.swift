@@ -3,7 +3,7 @@ import FlutterMacOS
 
 @main
 class AppDelegate: FlutterAppDelegate {
-  override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+  override func applicationShouldTerminateAfterLastWindowClosed(_ _: NSApplication) -> Bool {
     return true
   }
 }
